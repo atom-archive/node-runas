@@ -6,6 +6,7 @@ namespace runas {
 
 bool Runas(const std::string& command,
            std::vector<std::string>& args,
+           int options,
            int* exit_code) {
   CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
 
@@ -19,6 +20,9 @@ bool Runas(const std::string& command,
   sei.lpFile = command.c_str();
   sei.lpParameters = parameters.c_str();
   sei.nShow = SW_NORMAL;
+
+  if (options & OPTION_HIDE)
+    sei.nShow = SW_HIDE;
 
   if (::ShellExecuteEx(&sei) == FALSE || sei.hProcess == NULL)
     return false;

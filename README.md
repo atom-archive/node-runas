@@ -18,10 +18,10 @@ npm install runas
 runas = require 'runas'
 ```
 
-### runas(command, [args])
+### runas(command, args[, options])
 
 Launches a new process with the given `command`, with command line arguments in
-`args`. If omitted, `args` defaults to an empty Array.
+`args`. Passing `hide: true` in `options` could hide the window of `command`.
 
 This function is synchronous and returns the exit code when the `command`
 finished.

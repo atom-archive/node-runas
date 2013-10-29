@@ -9,7 +9,7 @@ namespace {
 Handle<Value> Runas(const Arguments& args) {
   HandleScope scope;
 
-  if (!args[0]->IsString() || !args[1]->IsArray())
+  if (!args[0]->IsString() || !args[1]->IsArray() || !args[2]->IsObject())
     return node::ThrowError("Bad argument");
 
   std::string command(*String::Utf8Value(args[0]));
@@ -24,8 +24,13 @@ Handle<Value> Runas(const Arguments& args) {
     c_args.push_back(arg);
   }
 
+  Handle<Object> v_options = args[2]->ToObject();
+  int options = runas::OPTION_NONE;
+  if (v_options->Get(String::New("hide"))->BooleanValue())
+    options |= runas::OPTION_HIDE;
+
   int code;
-  if (!runas::Runas(command, c_args, &code))
+  if (!runas::Runas(command, c_args, options, &code))
     return node::ThrowError("Failed to call runas");
 
   return scope.Close(Integer::New(code));
