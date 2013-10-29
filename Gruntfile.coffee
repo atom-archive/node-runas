@@ -10,6 +10,19 @@ module.exports = (grunt) ->
         dest: 'lib'
         ext: '.js'
 
+    cpplint:
+      files: ['src/**/*.cc']
+      reporter: 'spec'
+      verbosity: 1
+      filters:
+        build:
+          include: false
+          namespaces: false
+        legal:
+          copyright: false
+        readability:
+          braces: false
+
     shell:
       rebuild:
         command: 'npm build .'
@@ -35,6 +48,7 @@ module.exports = (grunt) ->
 
   grunt.loadNpmTasks('grunt-contrib-coffee')
   grunt.loadNpmTasks('grunt-shell')
-  grunt.registerTask('default', ['coffee', 'shell:rebuild'])
+  grunt.loadNpmTasks('node-cpplint')
+  grunt.registerTask('default', ['coffee', 'cpplint', 'shell:rebuild'])
   grunt.registerTask('test', ['default', 'shell:test'])
   grunt.registerTask('clean', ['shell:clean'])
