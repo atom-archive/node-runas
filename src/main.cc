@@ -24,8 +24,8 @@ Handle<Value> Runas(const Arguments& args) {
     c_args.push_back(arg);
   }
 
-  int code = runas::Runas(command, c_args);
-  if (code < 0)
+  int code;
+  if (!runas::Runas(command, c_args, &code))
     return node::ThrowError("Failed to call runas");
 
   return scope.Close(Integer::New(code));

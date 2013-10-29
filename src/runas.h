@@ -6,7 +6,9 @@
 
 namespace runas {
 
-int Runas(const std::string& command, std::vector<std::string>& args);
+bool Runas(const std::string& command,
+           std::vector<std::string>& args,
+           int* exit_code);
 
 }  // namespace runas
 

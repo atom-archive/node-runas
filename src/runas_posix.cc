@@ -2,8 +2,10 @@
 
 namespace runas {
 
-int Runas(const std::string& command, std::vector<std::string>& args) {
-  return -1;
+bool Runas(const std::string& command,
+           std::vector<std::string>& args,
+           int* exit_code) {
+  return false;
 }
 
 }  // namespace runas
