@@ -1,16 +1,15 @@
-#include <node.h>
-#include <node_internals.h>
+#include "nan.h"
 using namespace v8;
 
 #include "runas.h"
 
 namespace {
 
-Handle<Value> Runas(const Arguments& args) {
-  HandleScope scope;
+NAN_METHOD(Runas) {
+  NanScope();
 
   if (!args[0]->IsString() || !args[1]->IsArray() || !args[2]->IsObject())
-    return node::ThrowError("Bad argument");
+    return NanThrowTypeError("Bad argument");
 
   std::string command(*String::Utf8Value(args[0]));
   std::vector<std::string> c_args;
@@ -31,9 +30,9 @@ Handle<Value> Runas(const Arguments& args) {
 
   int code;
   if (!runas::Runas(command, c_args, options, &code))
-    return node::ThrowError("Failed to call runas");
+    return NanThrowError("Failed to call runas");
 
-  return scope.Close(Integer::New(code));
+  NanReturnValue(Integer::New(code));
 }
 
 void Init(Handle<Object> exports) {

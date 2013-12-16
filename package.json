@@ -29,6 +29,7 @@
     "node-cpplint": "~0.1.5"
   },
   "dependencies": {
+    "nan": "0.6.0",
     "bindings": "~1.1.0"
   }
 }
