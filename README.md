@@ -1,4 +1,6 @@
-# Runas - Run command as administrator on Windows
+# Runas
+
+Run command as administrator on Windows.
 
 ## Installing
 
