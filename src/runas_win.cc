@@ -62,7 +62,7 @@ bool Runas(const std::string& command,
 
   SHELLEXECUTEINFO sei = { sizeof(sei) };
   sei.fMask = SEE_MASK_NOASYNC | SEE_MASK_NOCLOSEPROCESS;
-  sei.lpVerb = "runas";
+  sei.lpVerb = (options & OPTION_ADMIN) ? "runas" : "open";
   sei.lpFile = command.c_str();
   sei.lpParameters = parameters.c_str();
   sei.nShow = SW_NORMAL;
