@@ -22,8 +22,12 @@ runas = require 'runas'
 
 ### runas(command, args[, options])
 
+* `options` Object
+  * `hide` - Hide the console window, `true` by default.
+  * `admin` - Run command as administrator, `false` by default.
+
 Launches a new process with the given `command`, with command line arguments in
-`args`. Passing `hide: true` in `options` could hide the window of `command`.
+`args`.
 
 This function is synchronous and returns the exit code when the `command`
 finished.
