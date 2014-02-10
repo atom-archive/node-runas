@@ -7,8 +7,11 @@
 namespace runas {
 
 enum Options {
-  OPTION_NONE = 0,
-  OPTION_HIDE = 1,  // Hide the command's window, which is shown by default.
+  OPTION_NONE  = 0,
+  // Hide the command's window.
+  OPTION_HIDE  = 1 << 1,
+  // Run as administrator.
+  OPTION_ADMIN = 1 << 2,
 };
 
 bool Runas(const std::string& command,

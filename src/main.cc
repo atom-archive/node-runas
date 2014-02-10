@@ -27,6 +27,8 @@ NAN_METHOD(Runas) {
   int options = runas::OPTION_NONE;
   if (v_options->Get(String::New("hide"))->BooleanValue())
     options |= runas::OPTION_HIDE;
+  if (v_options->Get(String::New("admin"))->BooleanValue())
+    options |= runas::OPTION_ADMIN;
 
   int code;
   if (!runas::Runas(command, c_args, options, &code))
