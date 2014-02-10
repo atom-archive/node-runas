@@ -4,6 +4,52 @@
 
 namespace runas {
 
+std::string QuoteCmdArg(const std::string& arg) {
+  if (arg.size() == 0)
+    return arg;
+
+  // No quotation needed.
+  if (arg.find_first_of(" \t\"") == std::string::npos)
+    return arg;
+
+  // No embedded double quotes or backlashes, just wrap quote marks around
+  // the whole thing.
+  if (arg.find_first_of("\"\\") == std::string::npos)
+    return std::string("\"") + arg + '"';
+
+  // Expected input/output:
+  //   input : hello"world
+  //   output: "hello\"world"
+  //   input : hello""world
+  //   output: "hello\"\"world"
+  //   input : hello\world
+  //   output: hello\world
+  //   input : hello\\world
+  //   output: hello\\world
+  //   input : hello\"world
+  //   output: "hello\\\"world"
+  //   input : hello\\"world
+  //   output: "hello\\\\\"world"
+  //   input : hello world\
+  //   output: "hello world\"
+  std::string quoted;
+  bool quote_hit = true;
+  for (size_t i = arg.size(); i > 0; --i) {
+    quoted.push_back(arg[i - 1]);
+
+    if (quote_hit && arg[i - 1] == '\\') {
+      quoted.push_back('\\');
+    } else if (arg[i - 1] == '"') {
+      quote_hit = true;
+      quoted.push_back('\\');
+    } else {
+      quote_hit = false;
+    }
+  }
+
+  return std::string("\"") + std::string(quoted.rbegin(), quoted.rend()) + '"';
+}
+
 bool Runas(const std::string& command,
            std::vector<std::string>& args,
            int options,
@@ -12,7 +58,7 @@ bool Runas(const std::string& command,
 
   std::string parameters;
   for (size_t i = 0; i < args.size(); ++i)
-    parameters += args[i] + ' ';
+    parameters += QuoteCmdArg(args[i]) + ' ';
 
   SHELLEXECUTEINFO sei = { sizeof(sei) };
   sei.fMask = SEE_MASK_NOASYNC | SEE_MASK_NOCLOSEPROCESS;
