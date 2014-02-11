@@ -30,8 +30,13 @@ NAN_METHOD(Runas) {
   if (v_options->Get(String::New("admin"))->BooleanValue())
     options |= runas::OPTION_ADMIN;
 
+  std::string std_input;
+  Handle<Value> v_stdin = v_options->Get(String::New("stdin"));
+  if (v_stdin->IsString())
+    std_input = *String::Utf8Value(v_stdin);
+
   int code;
-  if (!runas::Runas(command, c_args, options, &code))
+  if (!runas::Runas(command, c_args, std_input, options, &code))
     return NanThrowError("Failed to call runas");
 
   NanReturnValue(Integer::New(code));
