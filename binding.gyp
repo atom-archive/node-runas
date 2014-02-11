@@ -23,7 +23,11 @@
           'sources': [
             'src/runas_win.cc',
           ],
-        },{
+          'libraries': [
+            '-lole32.lib',
+            '-lshell32.lib',
+          ],
+        }, {
           'sources': [
             'src/runas_posix.cc',
           ],
