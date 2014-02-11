@@ -32,7 +32,7 @@ NAN_METHOD(Runas) {
 
   std::string std_input;
   Handle<Value> v_stdin = v_options->Get(String::New("stdin"));
-  if (v_stdin->IsString())
+  if (!v_stdin->IsUndefined())
     std_input = *String::Utf8Value(v_stdin);
 
   int code;
