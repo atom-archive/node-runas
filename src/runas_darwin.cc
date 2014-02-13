@@ -43,12 +43,25 @@ bool Runas(const std::string& command,
   for (size_t i = 0; i < args.size(); ++i)
     argv[i + 1] = const_cast<char*>(args[i].c_str());
 
+  FILE* pipe;
   if (ExecuteWithPrivileges(g_auth,
                             command,
                             kAuthorizationFlagDefaults,
                             &argv[0],
-                            NULL) != errAuthorizationSuccess)
+                            &pipe) != errAuthorizationSuccess)
     return false;
+
+  // Write to stdin.
+  const char*p = &std_input[0];
+  size_t want = std_input.size();
+  while (true) {
+    size_t r = fwrite(p, sizeof(*p), want, pipe);
+    if (r == 0)
+      break;
+    want -= r;
+    p += r;
+  }
+  fclose(pipe);
 
   int status;
   int pid = wait(&status);
