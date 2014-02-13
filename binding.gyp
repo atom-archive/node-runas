@@ -32,6 +32,9 @@
           'sources': [
             'src/runas_darwin.cc',
           ],
+          'libraries': [
+            '$(SDKROOT)/System/Library/Frameworks/Security.framework',
+          ],
         }],
         ['OS not in ["mac", "win"]', {
           'sources': [
