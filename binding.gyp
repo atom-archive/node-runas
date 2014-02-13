@@ -31,6 +31,8 @@
         ['OS=="mac"', {
           'sources': [
             'src/runas_darwin.cc',
+            'src/fork.cc',
+            'src/fork.h',
           ],
           'libraries': [
             '$(SDKROOT)/System/Library/Frameworks/Security.framework',
@@ -39,6 +41,8 @@
         ['OS not in ["mac", "win"]', {
           'sources': [
             'src/runas_posix.cc',
+            'src/fork.cc',
+            'src/fork.h',
           ],
         }],
       ],

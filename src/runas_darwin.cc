@@ -3,6 +3,8 @@
 #include <Security/Authorization.h>
 #include <sys/wait.h>
 
+#include "fork.h"
+
 namespace runas {
 
 namespace {
@@ -31,19 +33,19 @@ bool Runas(const std::string& command,
            const std::string& std_input,
            int options,
            int* exit_code) {
+  // Use fork when "admin" is false.
+  if (!(options & OPTION_ADMIN))
+    return Fork(command, args, std_input, options, exit_code);
+
   if (!g_auth && AuthorizationCreate(NULL,
                                      kAuthorizationEmptyEnvironment,
                                      kAuthorizationFlagDefaults,
                                      &g_auth) != errAuthorizationSuccess)
     return false;
 
-  // Convert std::string array to char* array.
-  std::vector<char*> argv(2 + args.size(), NULL);
-  argv[0] = const_cast<char*>(command.c_str());
-  for (size_t i = 0; i < args.size(); ++i)
-    argv[i + 1] = const_cast<char*>(args[i].c_str());
 
   FILE* pipe;
+  std::vector<char*> argv(StringVectorToCharStarVector(command, args));
   if (ExecuteWithPrivileges(g_auth,
                             command,
                             kAuthorizationFlagDefaults,
