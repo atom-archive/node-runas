@@ -1,63 +1,27 @@
 #include "runas.h"
 
-#include <errno.h>
-
-#include <sys/types.h>
+#include <Security/Authorization.h>
 #include <sys/wait.h>
-#include <unistd.h>
 
 namespace runas {
 
 namespace {
 
-void child(int* pfds,
-           const std::string& command,
-           const std::vector<std::string>& args) {
-  // Redirect stdin to the pipe.
-  close(pfds[1]);
-  dup2(pfds[0], 0);
-  close(pfds[0]);
+AuthorizationRef g_auth = NULL;
 
-  // Convert std::string array to char* array.
-  std::vector<char*> argv(2 + args.size(), NULL);
-  argv[0] = const_cast<char*>(command.c_str());
-  for (size_t i = 0; i < args.size(); ++i)
-    argv[i + 1] = const_cast<char*>(args[i].c_str());
-
-  execvp(command.c_str(), &argv[0]);
-  perror("execvp()");
-  exit(127);
-}
-
-int parent(int pid, int* pfds, const std::string& std_input) {
-  // Write string to child's stdin.
-  int want = std_input.size();
-  if (want > 0) {
-    const char* p = std_input.data();
-    close(pfds[0]);
-    while (want > 0) {
-      int r = write(pfds[1], p, want);
-      if (r > 0) {
-        want -= r;
-        p += r;
-      } else if (errno != EAGAIN && errno != EINTR) {
-        break;
-      }
-    }
-    close(pfds[1]);
-  }
-
-  // Wait for child.
-  int r, status;
-  do {
-    r = waitpid(pid, &status, WNOHANG);
-  } while (r != -1);
-
-  // Get exit code.
-  int exit_code = 0;
-  if (WIFEXITED(status))
-    exit_code = WEXITSTATUS(status);
-  return exit_code;
+OSStatus ExecuteWithPrivileges(AuthorizationRef authorization,
+                               const std::string& command,
+                               AuthorizationFlags options,
+                               char* const* arguments,
+                               FILE** pipe) {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+  return AuthorizationExecuteWithPrivileges(authorization,
+                                            command.c_str(),
+                                            options,
+                                            arguments,
+                                            pipe);
+#pragma clang diagnostic pop
 }
 
 }  // namespace
@@ -67,26 +31,32 @@ bool Runas(const std::string& command,
            const std::string& std_input,
            int options,
            int* exit_code) {
-  int pfds[2];
-  if (pipe(pfds) == -1)
+  if (!g_auth && AuthorizationCreate(NULL,
+                                     kAuthorizationEmptyEnvironment,
+                                     kAuthorizationFlagDefaults,
+                                     &g_auth) != errAuthorizationSuccess)
     return false;
 
-  // execvp
-  int pid = fork();
-  switch (pid) {
-    case 0:  // child
-      child(pfds, command, args);
-      break;
+  // Convert std::string array to char* array.
+  std::vector<char*> argv(2 + args.size(), NULL);
+  argv[0] = const_cast<char*>(command.c_str());
+  for (size_t i = 0; i < args.size(); ++i)
+    argv[i + 1] = const_cast<char*>(args[i].c_str());
 
-    case -1:  // error
-      return false;
+  if (ExecuteWithPrivileges(g_auth,
+                            command,
+                            kAuthorizationFlagDefaults,
+                            &argv[0],
+                            NULL) != errAuthorizationSuccess)
+    return false;
 
-    default:  // parent
-      *exit_code = parent(pid, pfds, std_input);
-      return true;
-  };
+  int status;
+  int pid = wait(&status);
+  if (pid == -1 || !WIFEXITED(status))
+    return false;
 
-  return false;
+  *exit_code = WEXITSTATUS(status);
+  return true;
 }
 
 }  // namespace runas
