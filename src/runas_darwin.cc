@@ -45,25 +45,28 @@ bool Runas(const std::string& command,
 
 
   FILE* pipe;
+  size_t want = std_input.size();
   std::vector<char*> argv(StringVectorToCharStarVector(args));
   if (ExecuteWithPrivileges(g_auth,
                             command,
                             kAuthorizationFlagDefaults,
                             &argv[0],
-                            &pipe) != errAuthorizationSuccess)
+                            (want > 0 ? &pipe : NULL))
+      != errAuthorizationSuccess)
     return false;
 
   // Write to stdin.
-  const char*p = &std_input[0];
-  size_t want = std_input.size();
-  while (true) {
-    size_t r = fwrite(p, sizeof(*p), want, pipe);
-    if (r == 0)
-      break;
-    want -= r;
-    p += r;
+  if (want > 0) {
+    const char*p = &std_input[0];
+    while (true) {
+      size_t r = fwrite(p, sizeof(*p), want, pipe);
+      if (r == 0)
+        break;
+      want -= r;
+      p += r;
+    }
+    fclose(pipe);
   }
-  fclose(pipe);
 
   int status;
   int pid = wait(&status);
