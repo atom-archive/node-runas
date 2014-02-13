@@ -35,10 +35,8 @@ NAN_METHOD(Runas) {
   if (!v_stdin->IsUndefined())
     std_input = *String::Utf8Value(v_stdin);
 
-  int code;
-  if (!runas::Runas(command, c_args, std_input, options, &code))
-    return NanThrowError("Failed to call runas");
-
+  int code = -1;
+  runas::Runas(command, c_args, std_input, options, &code);
   NanReturnValue(Integer::New(code));
 }
 

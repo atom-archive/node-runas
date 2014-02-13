@@ -1,6 +1,6 @@
 # Runas
 
-Run command as administrator on Windows.
+Run command synchronously with administrator privilege.
 
 ## Installing
 
@@ -33,5 +33,8 @@ Launches a new process with the given `command`, with command line arguments in
 This function is synchronous and returns the exit code when the `command`
 finished.
 
-**Note:** The `hide` and `admin` options have only been implemented on Windows,
-and the `stdin` option has only been implemented on POSIX systems.
+## Limitations
+
+* The `admin` option has only been implemented on Windows and OSX.
+* The `stdin` option has only been implemented on POSIX systems.
+* The `hide` option is only meaningful on Windows.
