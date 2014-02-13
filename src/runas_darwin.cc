@@ -1,5 +1,7 @@
 #include "runas.h"
 
+#include <errno.h>
+#include <fcntl.h>
 #include <Security/Authorization.h>
 #include <sys/wait.h>
 
@@ -45,17 +47,18 @@ bool Runas(const std::string& command,
 
 
   FILE* pipe;
-  size_t want = std_input.size();
   std::vector<char*> argv(StringVectorToCharStarVector(args));
   if (ExecuteWithPrivileges(g_auth,
                             command,
                             kAuthorizationFlagDefaults,
                             &argv[0],
-                            (want > 0 ? &pipe : NULL))
-      != errAuthorizationSuccess)
+                            &pipe) != errAuthorizationSuccess)
     return false;
 
+  int pid = fcntl(fileno(pipe), F_GETOWN, 0);
+
   // Write to stdin.
+  size_t want = std_input.size();
   if (want > 0) {
     const char*p = &std_input[0];
     while (true) {
@@ -65,12 +68,15 @@ bool Runas(const std::string& command,
       want -= r;
       p += r;
     }
-    fclose(pipe);
   }
+  fclose(pipe);
 
-  int status;
-  int pid = wait(&status);
-  if (pid == -1 || !WIFEXITED(status))
+  int r, status;
+  do {
+    r = waitpid(pid, &status, 0);
+  } while (r == -1 && errno == EINTR);
+
+  if (r == -1 || !WIFEXITED(status))
     return false;
 
   *exit_code = WEXITSTATUS(status);

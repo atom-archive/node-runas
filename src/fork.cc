@@ -47,14 +47,13 @@ int parent(int pid, int* pfds, const std::string& std_input) {
   // Wait for child.
   int r, status;
   do {
-    r = waitpid(pid, &status, WNOHANG);
-  } while (r != -1);
+    r = waitpid(pid, &status, 0);
+  } while (r == -1 && errno == EINTR);
 
-  // Get exit code.
-  int exit_code = 0;
-  if (WIFEXITED(status))
-    exit_code = WEXITSTATUS(status);
-  return exit_code;
+  if (r == -1 || !WIFEXITED(status))
+    return -1;
+
+  return WEXITSTATUS(status);
 }
 
 }  // namespace
