@@ -7,7 +7,6 @@
 namespace runas {
 
 std::vector<char*> StringVectorToCharStarVector(
-    const std::string& command,
     const std::vector<std::string>& args);
 
 bool Fork(const std::string& command,

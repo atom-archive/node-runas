@@ -45,7 +45,7 @@ bool Runas(const std::string& command,
 
 
   FILE* pipe;
-  std::vector<char*> argv(StringVectorToCharStarVector(command, args));
+  std::vector<char*> argv(StringVectorToCharStarVector(args));
   if (ExecuteWithPrivileges(g_auth,
                             command,
                             kAuthorizationFlagDefaults,

@@ -18,7 +18,9 @@ void child(int* pfds,
   dup2(pfds[0], 0);
   close(pfds[0]);
 
-  std::vector<char*> argv(StringVectorToCharStarVector(command, args));
+  std::vector<char*> argv(StringVectorToCharStarVector(args));
+  argv.insert(argv.begin(), const_cast<char*>(command.c_str()));
+
   execvp(command.c_str(), &argv[0]);
   perror("execvp()");
   exit(127);
@@ -59,12 +61,10 @@ int parent(int pid, int* pfds, const std::string& std_input) {
 
 
 std::vector<char*> StringVectorToCharStarVector(
-    const std::string& command,
     const std::vector<std::string>& args) {
-  std::vector<char*> argv(2 + args.size(), NULL);
-  argv[0] = const_cast<char*>(command.c_str());
+  std::vector<char*> argv(1 + args.size(), NULL);
   for (size_t i = 0; i < args.size(); ++i)
-    argv[i + 1] = const_cast<char*>(args[i].c_str());
+    argv[i] = const_cast<char*>(args[i].c_str());
   return argv;
 }
 
