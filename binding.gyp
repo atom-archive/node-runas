@@ -27,7 +27,13 @@
             '-lole32.lib',
             '-lshell32.lib',
           ],
-        }, {
+        }],
+        ['OS=="mac"', {
+          'sources': [
+            'src/runas_darwin.cc',
+          ],
+        }],
+        ['OS not in ["mac", "win"]', {
           'sources': [
             'src/runas_posix.cc',
           ],
