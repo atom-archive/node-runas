@@ -25,19 +25,19 @@ NAN_METHOD(Runas) {
 
   Handle<Object> v_options = args[2]->ToObject();
   int options = runas::OPTION_NONE;
-  if (v_options->Get(String::New("hide"))->BooleanValue())
+  if (v_options->Get(NanNew<String>("hide"))->BooleanValue())
     options |= runas::OPTION_HIDE;
-  if (v_options->Get(String::New("admin"))->BooleanValue())
+  if (v_options->Get(NanNew<String>("admin"))->BooleanValue())
     options |= runas::OPTION_ADMIN;
 
   std::string std_input;
-  Handle<Value> v_stdin = v_options->Get(String::New("stdin"));
+  Handle<Value> v_stdin = v_options->Get(NanNew<String>("stdin"));
   if (!v_stdin->IsUndefined())
     std_input = *String::Utf8Value(v_stdin);
 
   int code = -1;
   runas::Runas(command, c_args, std_input, options, &code);
-  NanReturnValue(Integer::New(code));
+  NanReturnValue(NanNew<Integer>(code));
 }
 
 void Init(Handle<Object> exports) {
