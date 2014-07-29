@@ -1,4 +1,4 @@
-runas = require('bindings')('runas.node')
+runas = require('../build/Release/runas.node')
 
 searchCommand = (command) ->
   return command if command[0] is '/'
