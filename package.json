@@ -17,10 +17,10 @@
   },
   "scripts": {
     "prepublish": "grunt coffee",
-    "test": "node node_modules/jasmine-node/bin/jasmine-node --captureExceptions --coffee spec/"
+    "test": "node node_modules/jasmine-focused/bin/jasmine-focused --captureExceptions --coffee spec"
   },
   "devDependencies": {
-    "jasmine-node": "~1.5.0",
+    "jasmine-focused": "^1.0.5",
     "grunt": "~0.4.1",
     "grunt-contrib-coffee": "~0.6.6",
     "grunt-cli": "~0.1.7",
