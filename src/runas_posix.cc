@@ -7,6 +7,7 @@ namespace runas {
 bool Runas(const std::string& command,
            const std::vector<std::string>& args,
            const std::string& std_input,
+           std::string* std_output,
            int options,
            int* exit_code) {
   return Fork(command, args, std_input, options, exit_code);

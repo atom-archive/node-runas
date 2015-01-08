@@ -53,6 +53,7 @@ std::string QuoteCmdArg(const std::string& arg) {
 bool Runas(const std::string& command,
            const std::vector<std::string>& args,
            const std::string& std_input,
+           std::string* std_output,
            int options,
            int* exit_code) {
   CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);

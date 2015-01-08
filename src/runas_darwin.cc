@@ -33,6 +33,7 @@ OSStatus ExecuteWithPrivileges(AuthorizationRef authorization,
 bool Runas(const std::string& command,
            const std::vector<std::string>& args,
            const std::string& std_input,
+           std::string* std_output,
            int options,
            int* exit_code) {
   // Use fork when "admin" is false.

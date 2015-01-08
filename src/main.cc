@@ -35,8 +35,9 @@ NAN_METHOD(Runas) {
   if (!v_stdin->IsUndefined())
     std_input = *String::Utf8Value(v_stdin);
 
+  std::string std_output;
   int code = -1;
-  runas::Runas(command, c_args, std_input, options, &code);
+  runas::Runas(command, c_args, std_input, &std_output, options, &code);
   NanReturnValue(NanNew<Integer>(code));
 }
 
