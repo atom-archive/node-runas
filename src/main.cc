@@ -35,9 +35,28 @@ NAN_METHOD(Runas) {
   if (!v_stdin->IsUndefined())
     std_input = *String::Utf8Value(v_stdin);
 
+  std::string std_output, std_error;
+  bool catch_output = v_options->Get(NanNew<String>("catchOutput"))->BooleanValue();
+
   int code = -1;
-  runas::Runas(command, c_args, std_input, options, &code);
-  NanReturnValue(NanNew<Integer>(code));
+  runas::Runas(command, c_args,
+               std_input,
+               catch_output ? &std_output : NULL,
+               catch_output ? &std_error : NULL,
+               options,
+               &code);
+
+  if (catch_output) {
+    Handle<Object> result = NanNew<Object>();
+    result->Set(NanNew<String>("exitCode"), NanNew<Integer>(code));
+    result->Set(NanNew<String>("stdout"),
+                NanNew<String>(std_output.data(), std_output.size()));
+    result->Set(NanNew<String>("stderr"),
+                NanNew<String>(std_error.data(), std_error.size()));
+    NanReturnValue(result);
+  } else {
+    NanReturnValue(NanNew<Integer>(code));
+  }
 }
 
 void Init(Handle<Object> exports) {

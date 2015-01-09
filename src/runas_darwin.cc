@@ -33,11 +33,13 @@ OSStatus ExecuteWithPrivileges(AuthorizationRef authorization,
 bool Runas(const std::string& command,
            const std::vector<std::string>& args,
            const std::string& std_input,
+           std::string* std_output,
+           std::string* std_error,
            int options,
            int* exit_code) {
   // Use fork when "admin" is false.
   if (!(options & OPTION_ADMIN))
-    return Fork(command, args, std_input, options, exit_code);
+    return Fork(command, args, std_input, std_output, std_error, options, exit_code);
 
   if (!g_auth && AuthorizationCreate(NULL,
                                      kAuthorizationEmptyEnvironment,
@@ -69,6 +71,18 @@ bool Runas(const std::string& command,
       p += r;
     }
   }
+
+  // Read from stdout.
+  if (std_output) {
+    char buffer[512];
+    while (true) {
+      size_t r = fread(buffer, sizeof(char), 512, pipe);
+      if (r == 0)
+        break;
+      std_output->append(buffer, r);
+    }
+  }
+
   fclose(pipe);
 
   int r, status;
