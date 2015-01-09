@@ -38,7 +38,7 @@ bool Runas(const std::string& command,
            int* exit_code) {
   // Use fork when "admin" is false.
   if (!(options & OPTION_ADMIN))
-    return Fork(command, args, std_input, options, exit_code);
+    return Fork(command, args, std_input, std_output, options, exit_code);
 
   if (!g_auth && AuthorizationCreate(NULL,
                                      kAuthorizationEmptyEnvironment,

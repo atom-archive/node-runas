@@ -10,7 +10,7 @@ bool Runas(const std::string& command,
            std::string* std_output,
            int options,
            int* exit_code) {
-  return Fork(command, args, std_input, options, exit_code);
+  return Fork(command, args, std_input, std_output, options, exit_code);
 }
 
 }  // namespace runas
