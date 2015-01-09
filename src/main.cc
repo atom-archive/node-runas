@@ -36,9 +36,15 @@ NAN_METHOD(Runas) {
     std_input = *String::Utf8Value(v_stdin);
 
   std::string std_output;
+  bool need_stdout = v_options->Get(NanNew<String>("stdout"))->BooleanValue();
+
   int code = -1;
-  runas::Runas(command, c_args, std_input, &std_output, options, &code);
-  NanReturnValue(NanNew<Integer>(code));
+  runas::Runas(command, c_args, std_input, need_stdout ? &std_output : NULL, options, &code);
+
+  if (need_stdout && code == 0)
+    NanReturnValue(NanNew<String>(std_output.data(), std_output.size()));
+  else
+    NanReturnValue(NanNew<Integer>(code));
 }
 
 void Init(Handle<Object> exports) {
