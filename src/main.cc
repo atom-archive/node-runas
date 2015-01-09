@@ -41,7 +41,7 @@ NAN_METHOD(Runas) {
   int code = -1;
   runas::Runas(command, c_args, std_input, catch_output ? &std_output : NULL, options, &code);
 
-  if (catch_output && code == 0) {
+  if (catch_output) {
     Handle<Object> result = NanNew<Object>();
     result->Set(NanNew<String>("exitCode"), NanNew<Integer>(code));
     result->Set(NanNew<String>("stdout"), NanNew<String>(std_output.data(), std_output.size()));
