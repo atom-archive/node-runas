@@ -8,6 +8,7 @@ bool Runas(const std::string& command,
            const std::vector<std::string>& args,
            const std::string& std_input,
            std::string* std_output,
+           std::string* std_error,
            int options,
            int* exit_code) {
   return Fork(command, args, std_input, std_output, options, exit_code);
