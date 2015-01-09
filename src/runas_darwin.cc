@@ -70,6 +70,18 @@ bool Runas(const std::string& command,
       p += r;
     }
   }
+
+  // Read from stdout.
+  if (std_output) {
+    char buffer[512];
+    while (true) {
+      size_t r = fread(buffer, sizeof(char), 512, pipe);
+      if (r == 0)
+        break;
+      std_output->append(buffer, r);
+    }
+  }
+
   fclose(pipe);
 
   int r, status;
