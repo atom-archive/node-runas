@@ -14,6 +14,7 @@ namespace {
 
 void child(int* stdin_fds,
            int* stdout_fds,
+           int* stderr_fds,
            const std::string& command,
            const std::vector<std::string>& args) {
   // Redirect stdin to the pipe.
@@ -26,6 +27,11 @@ void child(int* stdin_fds,
   dup2(stdout_fds[1], 1);
   close(stdout_fds[1]);
 
+  // Redirect stderr to the pipe.
+  close(stderr_fds[0]);
+  dup2(stderr_fds[1], 2);
+  close(stderr_fds[1]);
+
   std::vector<char*> argv(StringVectorToCharStarVector(args));
   argv.insert(argv.begin(), const_cast<char*>(command.c_str()));
 
@@ -36,7 +42,8 @@ void child(int* stdin_fds,
 
 int parent(int pid,
            int* stdin_fds, const std::string& std_input,
-           int* stdout_fds, std::string* std_output) {
+           int* stdout_fds, std::string* std_output,
+           int* stderr_fds, std::string* std_error) {
   // Write string to child's stdin.
   int want = std_input.size();
   if (want > 0) {
@@ -68,6 +75,21 @@ int parent(int pid,
   }
   close(stdout_fds[0]);
 
+
+  // Read from child's stderr
+  close(stderr_fds[1]);
+  if (stderr_fds) {
+    char buffer[512];
+    while (true) {
+      int r = read(stderr_fds[0], buffer, 512);
+      if (r > 0)
+        std_error->append(buffer, r);
+      else if (errno != EAGAIN && errno != EINTR)
+        break;
+    }
+  }
+  close(stderr_fds[0]);
+
   // Wait for child.
   int r, status;
   do {
@@ -95,6 +117,7 @@ bool Fork(const std::string& command,
           const std::vector<std::string>& args,
           const std::string& std_input,
           std::string* std_output,
+          std::string* std_error,
           int options,
           int* exit_code) {
   int stdin_fds[2];
@@ -105,18 +128,25 @@ bool Fork(const std::string& command,
   if (pipe(stdout_fds) == -1)
     return false;
 
+  int stderr_fds[2];
+  if (pipe(stderr_fds) == -1)
+    return false;
+
   // execvp
   int pid = fork();
   switch (pid) {
     case 0:  // child
-      child(stdin_fds, stdout_fds, command, args);
+      child(stdin_fds, stdout_fds, stderr_fds, command, args);
       break;
 
     case -1:  // error
       return false;
 
     default:  // parent
-      *exit_code = parent(pid, stdin_fds, std_input, stdout_fds, std_output);
+      *exit_code = parent(pid,
+                          stdin_fds, std_input,
+                          stdout_fds, std_output,
+                          stderr_fds, std_error);
       return true;
   };
 
