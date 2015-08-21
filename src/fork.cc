@@ -75,10 +75,9 @@ int parent(int pid,
   }
   close(stdout_fds[0]);
 
-
   // Read from child's stderr
   close(stderr_fds[1]);
-  if (stderr_fds) {
+  if (std_error) {
     char buffer[512];
     while (true) {
       int r = read(stderr_fds[0], buffer, 512);
