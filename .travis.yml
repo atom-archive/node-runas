@@ -1,3 +1,11 @@
+git:
+  depth: 10
+
+notifications:
+  email: false
+
+sudo: false
+
 language: node_js
 
 node_js:
@@ -5,10 +13,14 @@ node_js:
   - "0.10"
   - "iojs"
 
-notifications:
-  email: false
+env:
+  - CC=clang-3.6 CXX=clang++-3.6 npm_config_clang=1
+
+addons:
+  apt:
+    sources:
+      - llvm-toolchain-precise-3.6
+    packages:
+      - clang-3.6
 
 script: grunt
-
-git:
-  depth: 10
