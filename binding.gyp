@@ -1,5 +1,6 @@
 {
   'target_defaults': {
+    'win_delay_load_hook': 'false',
     'conditions': [
       ['OS=="win"', {
         'msvs_disabled_warnings': [
