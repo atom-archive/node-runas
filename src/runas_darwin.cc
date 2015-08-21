@@ -39,7 +39,8 @@ bool Runas(const std::string& command,
            int* exit_code) {
   // Use fork when "admin" is false.
   if (!(options & OPTION_ADMIN))
-    return Fork(command, args, std_input, std_output, std_error, options, exit_code);
+    return Fork(command, args, std_input, std_output, std_error, options,
+                exit_code);
 
   if (!g_auth && AuthorizationCreate(NULL,
                                      kAuthorizationEmptyEnvironment,
@@ -76,7 +77,7 @@ bool Runas(const std::string& command,
   if (std_output) {
     char buffer[512];
     while (true) {
-      size_t r = fread(buffer, sizeof(char), 512, pipe);
+      size_t r = fread(buffer, sizeof(buffer[0]), 512, pipe);
       if (r == 0)
         break;
       std_output->append(buffer, r);
