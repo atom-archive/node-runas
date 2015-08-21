@@ -1,0 +1,14 @@
+language: node_js
+
+node_js:
+  - "0.12"
+  - "0.10"
+  - "iojs"
+
+notifications:
+  email: false
+
+script: grunt
+
+git:
+  depth: 10
