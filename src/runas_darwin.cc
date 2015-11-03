@@ -74,7 +74,7 @@ bool Runas(const std::string& command,
   }
 
   // Read from stdout.
-  if (std_output) {
+  if (std_output && (options & OPTION_CATCH_OUTPUT)) {
     char buffer[512];
     while (true) {
       size_t r = fread(buffer, sizeof(buffer[0]), 512, pipe);

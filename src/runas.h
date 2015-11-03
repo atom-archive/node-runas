@@ -12,6 +12,8 @@ enum Options {
   OPTION_HIDE  = 1 << 1,
   // Run as administrator.
   OPTION_ADMIN = 1 << 2,
+  // Catch the output.
+  OPTION_CATCH_OUTPUT = 1 << 3,
 };
 
 bool Runas(const std::string& command,

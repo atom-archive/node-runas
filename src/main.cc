@@ -43,6 +43,8 @@ void Runas(const Nan::FunctionCallbackInfo<Value>& info) {
   std::string std_output, std_error;
   bool catch_output = GetProperty(v_options, "catchOutput", &v_value) &&
                       v_value->BooleanValue();
+  if (catch_output)
+    options |= runas::OPTION_CATCH_OUTPUT;
 
   int code = -1;
   runas::Runas(command, c_args, std_input, &std_output, &std_error, options,
