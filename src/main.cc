@@ -36,21 +36,26 @@ void Runas(const Nan::FunctionCallbackInfo<Value>& info) {
   if (GetProperty(v_options, "admin", &v_value) && v_value->BooleanValue())
     options |= runas::OPTION_ADMIN;
 
+  bool async = GetProperty(v_options, "async", &v_value) && v_value->BooleanValue();
+  if (async)
+    options |= runas::OPTION_RETURN_FD;
+
   std::string std_input;
   if (GetProperty(v_options, "stdin", &v_value) && v_value->IsString())
     std_input = *String::Utf8Value(v_value);
 
   std::string std_output, std_error;
-  bool catch_output = GetProperty(v_options, "catchOutput", &v_value) &&
-                      v_value->BooleanValue();
+  bool catch_output = GetProperty(v_options, "catchOutput", &v_value) && v_value->BooleanValue();
   if (catch_output)
     options |= runas::OPTION_CATCH_OUTPUT;
 
   int code = -1;
-  runas::Runas(command, c_args, std_input, &std_output, &std_error, options,
-               &code);
+  int file_descriptor;
+  runas::Runas(command, c_args, std_input, &std_output, &std_error, options, &file_descriptor, &code);
 
-  if (catch_output) {
+  if (async) {
+    info.GetReturnValue().Set(Nan::New<Integer>(file_descriptor));
+  } else if (catch_output) {
     Local<Object> result = Nan::New<Object>();
     Nan::Set(result,
              Nan::New<String>("exitCode").ToLocalChecked(),

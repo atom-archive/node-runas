@@ -36,11 +36,11 @@ bool Runas(const std::string& command,
            std::string* std_output,
            std::string* std_error,
            int options,
+           int* file_descriptor,
            int* exit_code) {
   // Use fork when "admin" is false.
   if (!(options & OPTION_ADMIN))
-    return Fork(command, args, std_input, std_output, std_error, options,
-                exit_code);
+    return Fork(command, args, std_input, std_output, std_error, options, exit_code);
 
   if (!g_auth && AuthorizationCreate(NULL,
                                      kAuthorizationEmptyEnvironment,
@@ -57,6 +57,11 @@ bool Runas(const std::string& command,
                             &argv[0],
                             &pipe) != errAuthorizationSuccess)
     return false;
+
+  if (options & OPTION_RETURN_FD) {
+    *file_descriptor = fileno(pipe);
+    return true;
+  }
 
   int pid = fcntl(fileno(pipe), F_GETOWN, 0);
 

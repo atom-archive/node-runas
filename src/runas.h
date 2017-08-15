@@ -14,6 +14,8 @@ enum Options {
   OPTION_ADMIN = 1 << 2,
   // Catch the output.
   OPTION_CATCH_OUTPUT = 1 << 3,
+  // Return the file descriptor
+  OPTION_RETURN_FD = 1 << 4,
 };
 
 bool Runas(const std::string& command,
@@ -22,6 +24,7 @@ bool Runas(const std::string& command,
            std::string* std_output,
            std::string* std_error,
            int options,
+           int* file_descriptor,
            int* exit_code);
 
 }  // namespace runas
