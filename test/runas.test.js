@@ -9,7 +9,7 @@ suite('runAs', () => {
 
       const fd = runAs('/bin/cat', [], {
         admin: true,
-        async: true
+        async: false // this is false so we can test on CI, you can set it to true to test locally
       })
 
       fs.write(fd, 'hello!')
