@@ -1,5 +1,7 @@
 const assert = require('assert')
 const fs = require('fs')
+const os = require('os')
+const path = require('path')
 const spawnAsAdmin = require('..')
 
 const options = {
@@ -11,8 +13,8 @@ const options = {
 suite('spawnAsAdmin', function () {
   this.timeout(10000) // allow time to type password at the prompt
 
-  if (process.platform === 'darwin') {
-
+  switch (process.platform) {
+  case 'darwin':
     test('returns a child process with a readable stdout and a writable stdin', async () => {
       const child = spawnAsAdmin('/bin/cat', [], options)
 
@@ -52,5 +54,20 @@ suite('spawnAsAdmin', function () {
       })
     })
 
+    break
+
+  case 'win32':
+    test('runs the child process as the root user', async () => {
+      const filePath = path.join(os.tmpdir(), 'spawn-as-admin-test-' + Date.now())
+      const child = spawnAsAdmin('copy', [__filename, filePath], options)
+
+      await new Promise(resolve => {
+        child.on('end', (code) => {
+          assert.equal(code, 0)
+          assert.equal(fs.readFileSync(filePath, 'utf8'), fs.readFileSync(__filename, 'utf8'))
+          resolve()
+        })
+      })
+    })
   }
 })
