@@ -37,9 +37,9 @@
             '$(SDKROOT)/System/Library/Frameworks/Security.framework',
           ],
         }],
-        ['OS not in ["mac", "win"]', {
+        ['OS=="linux"', {
           'sources': [
-            'src/spawn_as_admin_posix.cc',
+            'src/spawn_as_admin_linux.cc',
           ],
         }],
       ],
