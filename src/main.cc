@@ -1,81 +1,82 @@
 #include "nan.h"
-using namespace v8;
+#include "spawn_as_admin.h"
 
-#include "runas.h"
-
+namespace spawn_as_admin {
 namespace {
 
-inline
-bool GetProperty(Local<Object> obj, const char* key, Local<Value>* value) {
-  return Nan::Get(obj, Nan::New<String>(key).ToLocalChecked()).ToLocal(value);
-}
+using namespace v8;
 
-void Runas(const Nan::FunctionCallbackInfo<Value>& info) {
-  if (!info[0]->IsString() || !info[1]->IsArray() || !info[2]->IsObject()) {
-    Nan::ThrowTypeError("Bad argument");
+class Worker : public Nan::AsyncWorker {
+  Session session;
+  int exit_code;
+
+public:
+  Worker(Nan::Callback *callback, Session session) :
+    Nan::AsyncWorker(callback),
+    session(session),
+    exit_code(-1) {}
+
+  void Execute() {
+    exit_code = spawn_as_admin::FinishSpawnAsAdmin(&session);
+  }
+
+  void HandleOKCallback() {
+    Local<Value> argv[] = {Nan::New<Integer>(exit_code)};
+    callback->Call(1, argv);
+  }
+};
+
+void SpawnAsAdmin(const Nan::FunctionCallbackInfo<Value>& info) {
+  if (!info[0]->IsString()) {
+    Nan::ThrowTypeError("Command must be a string");
     return;
   }
 
   std::string command(*String::Utf8Value(info[0]));
-  std::vector<std::string> c_args;
 
-  Local<Array> v_args = Local<Array>::Cast(info[1]);
-  uint32_t length = v_args->Length();
-
-  c_args.reserve(length);
-  for (uint32_t i = 0; i < length; ++i) {
-    std::string arg(*String::Utf8Value(v_args->Get(i)));
-    c_args.push_back(arg);
+  if (!info[1]->IsArray()) {
+    Nan::ThrowTypeError("Arguments must be an array");
+    return;
   }
 
-  Local<Value> v_value;
-  Local<Object> v_options = info[2]->ToObject();
-  int options = runas::OPTION_NONE;
-  if (GetProperty(v_options, "hide", &v_value) && v_value->BooleanValue())
-    options |= runas::OPTION_HIDE;
-  if (GetProperty(v_options, "admin", &v_value) && v_value->BooleanValue())
-    options |= runas::OPTION_ADMIN;
+  Local<Array> js_args = Local<Array>::Cast(info[1]);
+  std::vector<std::string> args(js_args->Length());
+  for (uint32_t i = 0; i < args.size(); ++i) {
+    Local<Value> js_arg = js_args->Get(i);
 
-  bool async = GetProperty(v_options, "async", &v_value) && v_value->BooleanValue();
-  if (async)
-    options |= runas::OPTION_RETURN_FD;
+    if (!js_arg->IsString()) {
+      Nan::ThrowTypeError("Arguments must be an array of strings");
+      return;
+    }
 
-  std::string std_input;
-  if (GetProperty(v_options, "stdin", &v_value) && v_value->IsString())
-    std_input = *String::Utf8Value(v_value);
-
-  std::string std_output, std_error;
-  bool catch_output = GetProperty(v_options, "catchOutput", &v_value) && v_value->BooleanValue();
-  if (catch_output)
-    options |= runas::OPTION_CATCH_OUTPUT;
-
-  int code = -1;
-  int file_descriptor;
-  runas::Runas(command, c_args, std_input, &std_output, &std_error, options, &file_descriptor, &code);
-
-  if (async) {
-    info.GetReturnValue().Set(Nan::New<Integer>(file_descriptor));
-  } else if (catch_output) {
-    Local<Object> result = Nan::New<Object>();
-    Nan::Set(result,
-             Nan::New<String>("exitCode").ToLocalChecked(),
-             Nan::New<Integer>(code));
-    Nan::Set(result,
-             Nan::New<String>("stdout").ToLocalChecked(),
-             Nan::New<String>(std_output).ToLocalChecked());
-    Nan::Set(result,
-             Nan::New<String>("stderr").ToLocalChecked(),
-             Nan::New<String>(std_error).ToLocalChecked());
-    info.GetReturnValue().Set(result);
-  } else {
-    info.GetReturnValue().Set(Nan::New<Integer>(code));
+    args.push_back(std::string(*String::Utf8Value(js_arg)));
   }
+
+  if (!info[2]->IsFunction()) {
+    Nan::ThrowTypeError("Callback must be a function");
+    return;
+  }
+
+  bool admin = true;
+  if (info[3]->IsFalse()) admin = false;
+
+  Session session = spawn_as_admin::StartSpawnAsAdmin(command, args, admin);
+  if (session.pid == -1) return;
+
+  Local<Object> result = Nan::New<Object>();
+  result->Set(Nan::New("pid").ToLocalChecked(), Nan::New<Integer>(session.pid));
+  result->Set(Nan::New("stdin").ToLocalChecked(), Nan::New<Integer>(session.stdin_file_descriptor));
+  result->Set(Nan::New("stdout").ToLocalChecked(), Nan::New<Integer>(session.stdout_file_descriptor));
+  info.GetReturnValue().Set(result);
+
+  Nan::AsyncQueueWorker(new Worker(new Nan::Callback(info[2].As<Function>()), session));
 }
 
 void Init(Handle<Object> exports) {
-  Nan::SetMethod(exports, "runas", Runas);
+  Nan::SetMethod(exports, "spawnAsAdmin", SpawnAsAdmin);
 }
 
-}  // namespace
-
 NODE_MODULE(runas, Init)
+
+}  // namespace
+}  // namespace spawn_as_admin

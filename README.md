@@ -1,51 +1,29 @@
-# Runas
+# spawn-as-admin
 
-Run command synchronously with administrator privilege.
+Run commands with administrator privileges
 
 ## Installing
 
 ```sh
-npm install runas
+npm install spawn-as-admin
 ```
-
-## Building
-  * Clone the repository
-  * Run `npm install`
-  * Run `grunt` to compile the native and CoffeeScript code
-  * Run `grunt test` to run the specs
 
 ## Docs
 
-```coffeescript
-runas = require 'runas'
-```
+### spawnAsAdmin(command, arguments)
 
-### runas(command, args[, options])
+Launches a new process with the given `command`, and `arguments`.
 
-* `options` Object
-  * `hide` Boolean - Hide the console window, `true` by default.
-  * `admin` Boolean - Run command as administrator, `false` by default.
-  * `catchOutput` Boolean - Catch the stdout and stderr of the command, `false`
-    by default.
-  * `stdin` String - String which would be passed as stdin input.
+Returns an object with the following properties:
 
-Launches a new process with the given `command`, with command line arguments in
-`args`.
+* `stdin` - A `WritableStream` representing the process's standard input.
+* `stdout` - A `ReadableStream` representing the process's standard output.
 
-This function is synchronous and returns the exit code when the `command`
-finished.
+The returned object emits the following events:
 
-When the `catchOutput` option is specified to `true`, an object that contains
-`exitCode`, `stdout` and `stderr` will be returned.
+* `exit` - Emitted when the process exits, and passes the exit code of the process.
 
 ## Limitations
 
-* The `admin` option has only been implemented on Windows and OS X.
-* The `stdin` option has only been implemented on POSIX systems.
-* The `hide` option is only meaningful on Windows.
-* When `catchOutput` is `true`,
-  * on Linux `exitCode`, `stdout` and `stderr` will be returned,
-  * on OS X
-    * if `admin` is `false`, `exitCode`, `stdout` and `stderr` will be returned,
-    * if `admin` is `true`, `exitCode` and `stdout` will be returned,
-  * on Windows only `exitCode` will be returned.
+* The library only works on macOS and Windows.
+* The `stdin` and `stdout` properties are only present on macOS.

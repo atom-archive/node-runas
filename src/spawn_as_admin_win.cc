@@ -1,8 +1,7 @@
-#include "runas.h"
-
+#include "spawn_as_admin.h"
 #include <windows.h>
 
-namespace runas {
+namespace spawn_as_admin {
 
 std::string QuoteCmdArg(const std::string& arg) {
   if (arg.size() == 0)
@@ -50,41 +49,41 @@ std::string QuoteCmdArg(const std::string& arg) {
   return std::string("\"") + std::string(quoted.rbegin(), quoted.rend()) + '"';
 }
 
-bool Runas(const std::string& command,
-           const std::vector<std::string>& args,
-           const std::string& std_input,
-           std::string* std_output,
-           std::string* std_error,
-           int options,
-           int* exit_code) {
+Session StartSpawnAsAdmin(const std::string& command, const std::vector<std::string>& args, bool admin) {
   CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
 
   std::string parameters;
   for (size_t i = 0; i < args.size(); ++i)
     parameters += QuoteCmdArg(args[i]) + ' ';
 
-  SHELLEXECUTEINFO sei = { sizeof(sei) };
-  sei.fMask = SEE_MASK_NOASYNC | SEE_MASK_NOCLOSEPROCESS;
-  sei.lpVerb = (options & OPTION_ADMIN) ? "runas" : "open";
-  sei.lpFile = command.c_str();
-  sei.lpParameters = parameters.c_str();
-  sei.nShow = SW_NORMAL;
+  auto shell_execute_info = new SHELLEXECUTEINFO{};
+  shell_execute_info->cbSize = sizeof(*shell_execute_info);
+  shell_execute_info->fMask = SEE_MASK_NOASYNC | SEE_MASK_NOCLOSEPROCESS;
+  shell_execute_info->lpVerb = admin ? "runas" : "open";
+  shell_execute_info->lpFile = command.c_str();
+  shell_execute_info->lpParameters = parameters.c_str();
+  shell_execute_info->nShow = SW_NORMAL;
 
-  if (options & OPTION_HIDE)
-    sei.nShow = SW_HIDE;
+  if (::ShellExecuteEx(shell_execute_info) == FALSE || shell_execute_info->hProcess == NULL) {
+    return {nullptr, -1, -1, -1};
+  }
 
-  if (::ShellExecuteEx(&sei) == FALSE || sei.hProcess == NULL)
-    return false;
+  int pid = GetProcessId(shell_execute_info->hProcess);
+
+  return {shell_execute_info, pid, -1, -1};
+}
+
+int FinishSpawnAsAdmin(Session *session) {
+  auto shell_execute_info = static_cast<SHELLEXECUTEINFO *>(session->payload);
 
   // Wait for the process to complete.
-  ::WaitForSingleObject(sei.hProcess, INFINITE);
+  ::WaitForSingleObject(shell_execute_info->hProcess, INFINITE);
 
   DWORD code;
-  if (::GetExitCodeProcess(sei.hProcess, &code) == 0)
-    return false;
+  if (::GetExitCodeProcess(shell_execute_info->hProcess, &code) == 0)
+    return -1;
 
-  *exit_code = code;
-  return true;
+  return code;
 }
 
 }  // namespace runas

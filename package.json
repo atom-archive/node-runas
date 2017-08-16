@@ -1,19 +1,18 @@
 {
-  "main": "./lib/runas.js",
-  "name": "runas",
+  "name": "spawn-as-admin",
   "version": "3.1.1",
   "licenses": [
     {
       "type": "MIT",
-      "url": "http://github.com/atom/node-runas/raw/master/LICENSE.md"
+      "url": "http://github.com/atom/spawn-as-admin/raw/master/LICENSE.md"
     }
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/atom/node-runas.git"
+    "url": "https://github.com/atom/spawn-as-admin.git"
   },
   "bugs": {
-    "url": "https://github.com/atom/node-runas/issues"
+    "url": "https://github.com/atom/spawn-as-admin/issues"
   },
   "scripts": {
     "test": "mocha --ui=tdd test/*.test.js"

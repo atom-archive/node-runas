@@ -12,7 +12,7 @@
   },
   'targets': [
     {
-      'target_name': 'runas',
+      'target_name': 'spawn_as_admin',
       'sources': [
         'src/main.cc',
       ],
@@ -22,7 +22,7 @@
       'conditions': [
         ['OS=="win"', {
           'sources': [
-            'src/runas_win.cc',
+            'src/spawn_as_admin_win.cc',
           ],
           'libraries': [
             '-lole32.lib',
@@ -31,9 +31,7 @@
         }],
         ['OS=="mac"', {
           'sources': [
-            'src/runas_darwin.cc',
-            'src/fork.cc',
-            'src/fork.h',
+            'src/spawn_as_admin_darwin.cc',
           ],
           'libraries': [
             '$(SDKROOT)/System/Library/Frameworks/Security.framework',
@@ -41,9 +39,7 @@
         }],
         ['OS not in ["mac", "win"]', {
           'sources': [
-            'src/runas_posix.cc',
-            'src/fork.cc',
-            'src/fork.h',
+            'src/spawn_as_admin_posix.cc',
           ],
         }],
       ],
