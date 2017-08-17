@@ -13,23 +13,27 @@ const options = {}
 suite('spawnAsAdmin', function () {
   this.timeout(10000) // allow time to type password at the prompt
 
-  test('runs the given command with the given arguments', async () => {
-    const filePath = path.join(os.tmpdir(), 'spawn-as-admin-test-' + Date.now())
+  if (process.platform === 'darwin' || process.platform === 'win32') {
 
-    const child = spawnAsAdmin(process.execPath, [
-      '-e',
-      'require("fs").writeFileSync(process.argv[1], "hello")',
-      filePath
-    ], options)
+    test('runs the given command with the given arguments', async () => {
+      const filePath = path.join(os.tmpdir(), 'spawn-as-admin-test-' + Date.now())
 
-    await new Promise(resolve => {
-      child.on('exit', (code) => {
-        assert.equal(code, 0)
-        assert.equal(fs.readFileSync(filePath, 'utf8'), 'hello');
-        resolve()
+      const child = spawnAsAdmin(process.execPath, [
+        '-e',
+        'require("fs").writeFileSync(process.argv[1], "hello")',
+        filePath
+      ], options)
+
+      await new Promise(resolve => {
+        child.on('exit', (code) => {
+          assert.equal(code, 0)
+          assert.equal(fs.readFileSync(filePath, 'utf8'), 'hello');
+          resolve()
+        })
       })
     })
-  })
+
+  }
 
   if (process.platform === 'darwin') {
 

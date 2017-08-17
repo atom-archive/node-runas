@@ -31,6 +31,10 @@ class AdminProcess extends EventEmitter {
 }
 
 module.exports = function spawnAsAdmin (command, args = [], options = {}) {
+  if (process.platform !== 'darwin' && process.platform !== 'win32') {
+    throw new Error('This function only works on macOS and Windows')
+  }
+
   let result = null
 
   const spawnResult = binding.spawnAsAdmin(resolveCommand(command), args, (exitCode) => {
