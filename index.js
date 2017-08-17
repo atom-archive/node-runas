@@ -32,7 +32,10 @@ module.exports = function spawnAsAdmin (command, args = [], options = {}) {
   let result = null
 
   const spawnResult = binding.spawnAsAdmin(resolveCommand(command), args, (exitCode) => {
+    result.stdin.close()
+    result.stdout.close()
     result.emit('end', exitCode)
+    result.removeAllListeners()
   }, options && options.admin)
 
   if (!spawnResult) {
