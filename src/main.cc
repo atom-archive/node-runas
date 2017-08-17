@@ -2,7 +2,6 @@
 #include "spawn_as_admin.h"
 
 namespace spawn_as_admin {
-namespace {
 
 using namespace v8;
 
@@ -80,5 +79,4 @@ void Init(Handle<Object> exports) {
 
 NODE_MODULE(runas, Init)
 
-}  // namespace
 }  // namespace spawn_as_admin
