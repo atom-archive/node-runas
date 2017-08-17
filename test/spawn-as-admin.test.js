@@ -18,7 +18,8 @@ suite('spawnAsAdmin', function () {
 
     const child = spawnAsAdmin(process.execPath, [
       '-e',
-      `require("fs").writeFileSync("${filePath}", process.env.USER)`
+      'require("fs").writeFileSync(process.argv[1], process.env.USER)',
+      filePath
     ], options)
 
     await new Promise(resolve => {
