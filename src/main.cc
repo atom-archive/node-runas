@@ -77,6 +77,6 @@ void Init(Handle<Object> exports) {
   Nan::SetMethod(exports, "spawnAsAdmin", SpawnAsAdmin);
 }
 
-NODE_MODULE(runas, Init)
+NODE_MODULE(spawn_as_admin, Init)
 
 }  // namespace spawn_as_admin

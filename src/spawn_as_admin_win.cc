@@ -86,4 +86,4 @@ int WaitForChildProcessToExit(ChildProcess *child_process, bool test_mode) {
   return code;
 }
 
-}  // namespace runas
+}  // namespace spawn_as_admin

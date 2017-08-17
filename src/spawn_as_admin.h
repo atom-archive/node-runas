@@ -1,5 +1,5 @@
-#ifndef SRC_RUNAS_H_
-#define SRC_RUNAS_H_
+#ifndef SRC_SPAWN_AS_ADMIN_H_
+#define SRC_SPAWN_AS_ADMIN_H_
 
 #include <string>
 #include <vector>
@@ -17,6 +17,6 @@ ChildProcess StartChildProcess(const std::string &command, const std::vector<std
 
 int WaitForChildProcessToExit(ChildProcess *, bool test_mode);
 
-}  // namespace runas
+}  // namespace spawn_as_admin
 
-#endif  // SRC_RUNAS_H_
+#endif  // SRC_SPAWN_AS_ADMIN_H_
