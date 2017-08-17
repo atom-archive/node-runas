@@ -7,17 +7,19 @@ namespace {
 using namespace v8;
 
 class Worker : public Nan::AsyncWorker {
-  Session session;
+  ChildProcess child_process;
   int exit_code;
+  bool test_mode;
 
 public:
-  Worker(Nan::Callback *callback, Session session) :
+  Worker(Nan::Callback *callback, ChildProcess child_process, bool test_mode) :
     Nan::AsyncWorker(callback),
-    session(session),
-    exit_code(-1) {}
+    child_process(child_process),
+    exit_code(-1),
+    test_mode(test_mode) {}
 
   void Execute() {
-    exit_code = spawn_as_admin::FinishSpawnAsAdmin(&session);
+    exit_code = spawn_as_admin::WaitForChildProcessToExit(&child_process, test_mode);
   }
 
   void HandleOKCallback() {
@@ -57,19 +59,19 @@ void SpawnAsAdmin(const Nan::FunctionCallbackInfo<Value>& info) {
     return;
   }
 
-  bool admin = true;
-  if (info[3]->IsFalse()) admin = false;
+  bool test_mode = false;
+  if (info[3]->IsTrue()) test_mode = true;
 
-  Session session = spawn_as_admin::StartSpawnAsAdmin(command, args, admin);
-  if (session.pid == -1) return;
+  ChildProcess child_process = spawn_as_admin::StartChildProcess(command, args, test_mode);
+  if (child_process.pid == -1) return;
 
   Local<Object> result = Nan::New<Object>();
-  result->Set(Nan::New("pid").ToLocalChecked(), Nan::New<Integer>(session.pid));
-  result->Set(Nan::New("stdin").ToLocalChecked(), Nan::New<Integer>(session.stdin_file_descriptor));
-  result->Set(Nan::New("stdout").ToLocalChecked(), Nan::New<Integer>(session.stdout_file_descriptor));
+  result->Set(Nan::New("pid").ToLocalChecked(), Nan::New<Integer>(child_process.pid));
+  result->Set(Nan::New("stdin").ToLocalChecked(), Nan::New<Integer>(child_process.stdin_file_descriptor));
+  result->Set(Nan::New("stdout").ToLocalChecked(), Nan::New<Integer>(child_process.stdout_file_descriptor));
   info.GetReturnValue().Set(result);
 
-  Nan::AsyncQueueWorker(new Worker(new Nan::Callback(info[2].As<Function>()), session));
+  Nan::AsyncQueueWorker(new Worker(new Nan::Callback(info[2].As<Function>()), child_process, test_mode));
 }
 
 void Init(Handle<Object> exports) {

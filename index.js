@@ -20,6 +20,8 @@ function resolveCommand (command) {
 class AdminProcess extends EventEmitter {
   constructor (pid, stdinFD, stdoutFD) {
     super()
+    this.stdinFD = stdinFD
+    this.stdoutFD = stdoutFD
     this.pid = pid
     this.stdin = stdinFD ? fs.createWriteStream(null, {fd: stdinFD}) : null
     this.stdout = stdoutFD ? fs.createReadStream(null, {fd: stdoutFD}) : null
@@ -32,11 +34,8 @@ module.exports = function spawnAsAdmin (command, args = [], options = {}) {
   let result = null
 
   const spawnResult = binding.spawnAsAdmin(resolveCommand(command), args, (exitCode) => {
-    result.stdin.close()
-    result.stdout.close()
-    result.emit('end', exitCode)
-    result.removeAllListeners()
-  }, options && options.admin)
+    result.emit('exit', exitCode)
+  }, options && options.testMode)
 
   if (!spawnResult) {
     throw new Error(`Failed to obtain root priveleges to run ${command}`)

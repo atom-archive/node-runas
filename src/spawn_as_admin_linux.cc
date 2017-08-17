@@ -2,11 +2,11 @@
 
 namespace spawn_as_admin {
 
-Session StartSpawnAsAdmin(const std::string& command, const std::vector<std::string>& args) {
+ChildProcess StartChildProcess(const std::string& command, const std::vector<std::string>& args, bool test_mode) {
   return {nullptr, -1, -1, -1};
 }
 
-int FinishSpawnAsAdmin(Session *session) {
+int WaitForChildProcessToExit(ChildProcess *child_process, bool test_mode) {
   return -1;
 }
 

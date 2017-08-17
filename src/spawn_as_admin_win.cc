@@ -49,7 +49,7 @@ std::string QuoteCmdArg(const std::string& arg) {
   return std::string("\"") + std::string(quoted.rbegin(), quoted.rend()) + '"';
 }
 
-Session StartSpawnAsAdmin(const std::string& command, const std::vector<std::string>& args, bool admin) {
+ChildProcess StartChildProcess(const std::string& command, const std::vector<std::string>& args, bool test_mode) {
   CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
 
   std::string parameters;
@@ -59,7 +59,7 @@ Session StartSpawnAsAdmin(const std::string& command, const std::vector<std::str
   auto shell_execute_info = new SHELLEXECUTEINFO{};
   shell_execute_info->cbSize = sizeof(*shell_execute_info);
   shell_execute_info->fMask = SEE_MASK_NOASYNC | SEE_MASK_NOCLOSEPROCESS;
-  shell_execute_info->lpVerb = admin ? "runas" : "open";
+  shell_execute_info->lpVerb = test_mode ? "open" : "runas";
   shell_execute_info->lpFile = command.c_str();
   shell_execute_info->lpParameters = parameters.c_str();
   shell_execute_info->nShow = SW_NORMAL;
@@ -73,8 +73,8 @@ Session StartSpawnAsAdmin(const std::string& command, const std::vector<std::str
   return {shell_execute_info, pid, -1, -1};
 }
 
-int FinishSpawnAsAdmin(Session *session) {
-  auto shell_execute_info = static_cast<SHELLEXECUTEINFO *>(session->payload);
+int WaitForChildProcessToExit(ChildProcess *child_process, bool test_mode) {
+  auto shell_execute_info = static_cast<SHELLEXECUTEINFO *>(child_process->payload);
 
   // Wait for the process to complete.
   ::WaitForSingleObject(shell_execute_info->hProcess, INFINITE);

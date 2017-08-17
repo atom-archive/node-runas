@@ -6,16 +6,16 @@
 
 namespace spawn_as_admin {
 
-struct Session {
+struct ChildProcess {
   void *payload;
   int pid;
   int stdin_file_descriptor;
   int stdout_file_descriptor;
 };
 
-Session StartSpawnAsAdmin(const std::string &command, const std::vector<std::string> &args, bool admin);
+ChildProcess StartChildProcess(const std::string &command, const std::vector<std::string> &args, bool test_mode);
 
-int FinishSpawnAsAdmin(Session *session);
+int WaitForChildProcessToExit(ChildProcess *, bool test_mode);
 
 }  // namespace runas
 

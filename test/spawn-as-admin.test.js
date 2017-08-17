@@ -4,11 +4,11 @@ const os = require('os')
 const path = require('path')
 const spawnAsAdmin = require('..')
 
-const options = {
-  // Comment out to test w/ actual admin privileges. This will require typing a username
-  // and password during the tests.
-  // admin: false
-}
+const options = {}
+
+// Comment out to test w/ actual admin privileges. This will require typing a username
+// and password during the tests.
+// options.testMode = true
 
 suite('spawnAsAdmin', function () {
   this.timeout(10000) // allow time to type password at the prompt
@@ -18,22 +18,14 @@ suite('spawnAsAdmin', function () {
 
     const child = spawnAsAdmin(process.execPath, [
       '-e',
-      'require("fs").writeFileSync(process.argv[1], process.env.USER)',
+      'require("fs").writeFileSync(process.argv[1], "hello")',
       filePath
     ], options)
 
     await new Promise(resolve => {
-      child.on('end', (code) => {
+      child.on('exit', (code) => {
         assert.equal(code, 0)
-
-        const fileContent = fs.readFileSync(filePath, 'utf8').trim()
-
-        if (options.admin === false) {
-          assert.equal(fileContent, process.env.USER)
-        } else {
-          assert.equal(fileContent, 'root')
-        }
-
+        assert.equal(fs.readFileSync(filePath, 'utf8'), 'hello');
         resolve()
       })
     })
@@ -51,7 +43,7 @@ suite('spawnAsAdmin', function () {
       child.stdin.end();
 
       await new Promise(resolve => {
-        child.on('end', (code) => {
+        child.on('exit', (code) => {
           assert.equal(code, 0)
           assert.equal(stdout, 'hello!')
           resolve()
@@ -66,10 +58,10 @@ suite('spawnAsAdmin', function () {
       child.stdout.on('data', (data) => stdout += data.toString('utf8'))
 
       await new Promise(resolve => {
-        child.on('end', (code) => {
+        child.on('exit', (code) => {
           assert.equal(code, 0)
 
-          if (options.admin === false) {
+          if (options.testMode) {
             assert.equal(stdout, process.env.USER + '\n')
           } else {
             assert.equal(stdout, 'root\n')
