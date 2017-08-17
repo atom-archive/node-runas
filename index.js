@@ -14,7 +14,7 @@ function resolveCommand (command) {
     } catch (e) {}
   }
 
-  return ''
+  throw new Error(`Could not find '${command}' in any folder on PATH`)
 }
 
 class AdminProcess extends EventEmitter {

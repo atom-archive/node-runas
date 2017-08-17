@@ -58,7 +58,7 @@ Session SpawnAsCurrentUser(const string &command, vector<char *> &argv) {
       argv.insert(argv.begin(), const_cast<char*>(command.c_str()));
       argv.push_back(nullptr);
 
-      execvp(command.c_str(), &argv[0]);
+      execvp(command.c_str(), argv.data());
       perror("execvp()");
       exit(127);
 
@@ -69,7 +69,8 @@ Session SpawnAsCurrentUser(const string &command, vector<char *> &argv) {
 }
 
 Session StartSpawnAsAdmin(const string& command, const vector<string>& args, bool admin) {
-  vector<char *> argv(args.size());
+  vector<char *> argv;
+  argv.reserve(args.size());
   for (const string &arg : args) {
     argv.push_back(const_cast<char *>(arg.c_str()));
   }
