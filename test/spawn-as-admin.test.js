@@ -8,7 +8,7 @@ const options = {}
 
 // Comment out to test w/ actual admin privileges. This will require typing a username
 // and password during the tests.
-// options.testMode = true
+options.testMode = true
 
 suite('spawnAsAdmin', function () {
   this.timeout(10000) // allow time to type password at the prompt
