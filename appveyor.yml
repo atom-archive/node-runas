@@ -18,3 +18,7 @@ test_script:
   - npm test
 
 build: off
+
+branches:
+  only:
+    - master
